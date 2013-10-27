@@ -2,6 +2,7 @@ module SchemeParser where
 
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Control.Monad
+import Numeric (readHex, readOct, readDec)
 
 data LispVal = Atom String
              | List [LispVal]
@@ -11,7 +12,7 @@ data LispVal = Atom String
              | Bool Bool
 
 symbol :: Parser Char
-symbol = oneOf "!$%&|*+-/:<=?>#^_~#"
+symbol = oneOf "!$%&|*+-/:<=?>#^_~"
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -22,6 +23,11 @@ parseString = do
   x <- many $ noneOf "\"\\" <|> escapedChars
   char '"'
   return $ String x
+
+parseBoolean :: Parser LispVal
+parseBoolean = do
+  char '#'
+  (char 't' >> return (Bool True)) <|> (char 'f' >> return (Bool False))
 
 escapedChars :: Parser Char
 escapedChars = do
@@ -37,16 +43,22 @@ parseAtom :: Parser LispVal
 parseAtom = do
   first <- letter <|> symbol
   rest <- many $ letter <|> digit <|> symbol
-  let atom = [first] ++ rest
-  return $ case atom of
-    "#t" -> Bool True
-    "#f" -> Bool False
-    _    -> Atom atom
+  return $ Atom ([first] ++ rest)
 
 parseNumber :: Parser LispVal
 parseNumber = return . Number . read =<< many1 digit
 
+parseBase :: Char -> Parser Char -> (String -> Integer) -> Parser LispVal
+parseBase delim validDigit reader = do
+  try $ string ['#', delim]
+  return . Number . reader =<< many1 validDigit
+
 parseExpr :: Parser LispVal
 parseExpr = parseAtom
         <|> parseString
+        <|> parseBoolean
         <|> parseNumber
+        <|> parseBase 'x' hexDigit (r readHex)
+        <|> parseBase 'd' digit    (r readDec)
+        <|> parseBase 'o' octDigit (r readOct)
+  where r = (id fst .) . ((!! 0) .)
