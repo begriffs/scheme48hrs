@@ -3,6 +3,7 @@ module Main where
 import System.Environment
 import Text.ParserCombinators.Parsec (parse)
 import SchemeParser
+import SchemePrinter
 
 main :: IO ()
 main = do
