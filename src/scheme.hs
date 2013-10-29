@@ -12,4 +12,4 @@ main = do
 readExpr :: String -> String
 readExpr input = case parse SchemeParser.parseExpr "lisp" input of
   Left err -> "No Match: " ++ show err
-  Right val -> "Found value"
+  Right val -> show val

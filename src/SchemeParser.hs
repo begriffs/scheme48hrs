@@ -10,6 +10,7 @@ data LispVal = Atom String
              | Number Integer
              | String String
              | Bool Bool
+  deriving (Show)
 
 symbol :: Parser Char
 symbol = oneOf "!$%&|*+-/:<=?>#^_~"
