@@ -2,10 +2,10 @@ module SchemePrinter where
 
 import SchemeParser
 
-instance Show LispVal where
-  show (Atom a)   = a
-  show (Number n) = show n
-  show (String s) = show s
-  show (Bool b)
-    | b == True   = "#t"
-    | b == False  = "#f"
+pp :: LispVal -> String
+pp (Atom a)   = a
+pp (Number n) = show n
+pp (String s) = show s
+pp (Bool b)
+  | b == True   = "#t"
+  | b == False  = "#f"
