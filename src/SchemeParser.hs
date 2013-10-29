@@ -55,9 +55,9 @@ parseBase delim validDigit reader = do
   return . Number . reader =<< many1 validDigit
 
 parseExpr :: Parser LispVal
-parseExpr = parseAtom
+parseExpr = parseBoolean
         <|> parseString
-        <|> parseBoolean
+        <|> parseAtom
         <|> parseNumber
         <|> parseBase 'x' hexDigit (r readHex)
         <|> parseBase 'd' digit    (r readDec)
