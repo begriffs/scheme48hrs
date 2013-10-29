@@ -4,6 +4,7 @@ import Test.Framework (testGroup, Test)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 import Test.QuickCheck
 import Control.Monad (liftM)
+import Control.Applicative ( (<$>) )
 
 import Text.ParserCombinators.Parsec (parse)
 import SchemeParser
@@ -11,10 +12,15 @@ import SchemePrinter
 
 instance Arbitrary LispVal where
   arbitrary =
-    oneof [ liftM  Atom   arbitrary
-          , liftM  Number arbitrary
-          , liftM  String arbitrary
-          , liftM  Bool   arbitrary ]
+    oneof [ do { f <- first; r <- rest; return $ Atom (f : r) }
+          , liftM Number arbitrary
+          , liftM String arbitrary
+          , liftM Bool   arbitrary ]
+    where symbol = elements "!$%&|*+-/:<=?>#^_~"
+          letter = elements $ ['a'..'z']++['A'..'Z']
+          digit  = elements ['0'..'9']
+          first  = oneof [letter, symbol]
+          rest   = listOf $ oneof [letter, digit, symbol]
 
 parserSuite :: Test
 parserSuite = testGroup "Scheme Parser"

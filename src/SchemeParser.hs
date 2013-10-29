@@ -47,7 +47,16 @@ parseAtom = do
   return $ Atom ([first] ++ rest)
 
 parseNumber :: Parser LispVal
-parseNumber = return . Number . read =<< many1 digit
+parseNumber = parseNegative <|> parsePositive
+
+parseNegative :: Parser LispVal
+parseNegative = do
+  char '-'
+  return . Number . negate . read =<< many1 digit
+
+parsePositive :: Parser LispVal
+parsePositive =
+  return . Number . read =<< many1 digit
 
 parseBase :: Char -> Parser Char -> (String -> Integer) -> Parser LispVal
 parseBase delim validDigit reader = do
@@ -57,9 +66,9 @@ parseBase delim validDigit reader = do
 parseExpr :: Parser LispVal
 parseExpr = parseBoolean
         <|> parseString
-        <|> parseAtom
         <|> parseNumber
         <|> parseBase 'x' hexDigit (r readHex)
         <|> parseBase 'd' digit    (r readDec)
         <|> parseBase 'o' octDigit (r readOct)
+        <|> parseAtom
   where r = (id fst .) . ((!! 0) .)
